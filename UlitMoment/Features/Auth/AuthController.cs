@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using UlitMoment.Common.Exceptions;
 using UlitMoment.Features.Auth.Contracts;
 
@@ -25,7 +26,7 @@ public class AuthController(AuthService authService) : ControllerBase
         }
     }
 
-	[HttpPost]
+    [HttpPost]
     public async Task<IActionResult> SignIn(SignInRequest request)
     {
         try
@@ -44,24 +45,24 @@ public class AuthController(AuthService authService) : ControllerBase
     {
         try
         {
-            var result = await _authService.SetPasswordAsync(request);
-
-		    if (!result.Succeeded)
-                return BadRequest(result.Errors);
+            await _authService.SetPasswordAsync(request);
             return Ok();
         }
         catch (HttpResponseError err)
         {
-			return StatusCode(err.StatusCode, err.Message);
-		}
+            return StatusCode(err.StatusCode, err.Message);
+        }
     }
 
     [HttpPost]
-    public async Task<IActionResult> UpdateToken(UpdateTokenRequest request)
+    [Authorize("RefreshToken")]
+    public async Task<IActionResult> UpdateToken()
     {
+        var userId = User.Claims.First(c => c.Type == "UserId").Value;
+        var token = await HttpContext.GetTokenAsync("refresh_token");
         try
         {
-            var result = await _authService.UpdateTokenAsync(request);
+            var result = await _authService.UpdateTokenAsync(new Guid(userId), token!);
             return Ok(result);
         }
         catch (HttpResponseError err)

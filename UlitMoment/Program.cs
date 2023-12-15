@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -13,7 +12,6 @@ using Serilog.Formatting.Json;
 using UlitMoment;
 using UlitMoment.Configuration;
 using UlitMoment.Database;
-using UlitMoment.Features.Auth;
 
 EnvLoader.Load(".env");
 
@@ -66,7 +64,18 @@ builder
         }
     );
 
-// Authorization
+// Auth
+builder
+    .Services
+    .AddAuthorizationBuilder()
+    .SetDefaultPolicy(
+        new AuthorizationPolicyBuilder("Bearer")
+            .RequireAuthenticatedUser()
+            .RequireClaim("UserId")
+            .Build()
+    )
+    .AddPolicy("RefreshToken", policy => policy.RequireAuthenticatedUser().RequireClaim("UserId"));
+
 builder
     .Services
     .AddAuthentication(options =>

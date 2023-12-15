@@ -4,18 +4,17 @@ using Microsoft.Extensions.Options;
 using UlitMoment.Configuration;
 using UlitMoment.Database;
 using UlitMoment.Features.Auth.Contracts;
+using UlitMoment.Features.Auth.Errors;
 
 namespace UlitMoment.Features.Auth;
 
 public class AuthService(
-    ILogger<AuthService> logger,
     UserManager<User> userManager,
     UserContext userContext,
     TokenService tokenService,
     IOptions<ApplicationSettings> settings
 )
 {
-    private readonly ILogger<AuthService> _logger = logger;
     private readonly UserManager<User> _userManager = userManager;
     private readonly UserContext _userContext = userContext;
     private readonly TokenService _tokenService = tokenService;
@@ -34,12 +33,9 @@ public class AuthService(
             ?? throw new UserNotFoundError(request.Email);
 
         if (!await _userManager.CheckPasswordAsync(user, request.Password))
-        {
             throw new WrongPasswordError();
-        }
 
-        //переписать
-        return await GenerateTokensAsync(user);
+        return await GenerateTokensAsync(user.Id);
     }
 
     public async Task<string> CreateUserAsync(SignOnRequest request)
@@ -55,107 +51,70 @@ public class AuthService(
         return confirmationToken;
     }
 
-    public async Task<IdentityResult> SetPasswordAsync(SetPasswordRequest request)
+    public async Task SetPasswordAsync(SetPasswordRequest request)
     {
-        var user = await _userManager.FindByEmailAsync(request.Email)
+        var user =
+            await _userManager.FindByEmailAsync(request.Email)
             ?? throw new UserNotFoundError(request.Email);
 
-		var result = await _userManager.ConfirmEmailAsync(user, request.Token);
-        if (!result.Succeeded)
-            return result;
-
-        return await _userManager.AddPasswordAsync(user, request.Password);
+        {
+            var result = await _userManager.ConfirmEmailAsync(user, request.Token);
+            if (!result.Succeeded)
+                throw new IdentityResponseError(result.Errors);
+        }
+        
+        {
+            var result = await _userManager.AddPasswordAsync(user, request.Password);
+			if (!result.Succeeded)
+				throw new IdentityResponseError(result.Errors);
+		}
     }
 
-    public async Task<UpdateTokenResponse> UpdateTokenAsync(UpdateTokenRequest request)
+    public async Task<LoginResponse> UpdateTokenAsync(Guid userId, string refreshToken)
     {
-        var (tokenIsValid, claimsPrincipal) = _tokenService.ValidateRefreshToken(
-            request.RefreshToken
-        );
-
-        if (!tokenIsValid)
-        {
-            throw new InvalidTokenError();
-        }
-
-        var userId = new Guid(claimsPrincipal!.Claims.Single(c => c.Type == "UserId").Value);
-
-        var user = await _userContext
-            .Users
-            .Include(u => u.RefreshTokens)
-            .FirstOrDefaultAsync(u => u.Id == userId);
-
-        if (user is null)
-        {
-            _logger.LogWarning(
-                "user with id: {userId} has valid refresh token: {token} but there is no user with such id in database",
-                userId,
-                request.RefreshToken
-            );
+        if (!await _userContext.Users.AnyAsync(u => u.Id == userId))
             throw new UserNotFoundError(userId);
-        }
-        ArgumentNullException.ThrowIfNull(user.RefreshTokens);
 
-        var userHasToken = user.RefreshTokens.Any(t => t.Value == request.RefreshToken);
+        var currentToken =
+            await _userContext
+                .RefreshTokens
+                .FirstOrDefaultAsync(t => t.UserId == userId && t.Value == refreshToken)
+            ?? throw new InvalidTokenError();
 
-        if (!userHasToken)
-        {
-            _logger.LogWarning(
-                "user with id: {userId} has valid refresh token: {token} but this token is not presented in user's RefreshTokens table",
-                userId,
-                request.RefreshToken
-            );
-            throw new InvalidTokenError();
-        }
-
-        var newAccessToken = _tokenService.CreateAccessToken(userId.ToString());
-        var newRefreshToken = _tokenService.CreateRefreshToken(userId.ToString());
-
-        user.RefreshTokens.Remove(user.RefreshTokens.Single(t => t.Value == request.RefreshToken));
-        user.RefreshTokens.Add(
-            new RefreshToken
-            {
-                Value = newRefreshToken,
-                ExpireDate = DateTimeOffset.UtcNow.AddDays(_refreshTokenLifetimeInDays),
-                UserId = user.Id
-            }
-        );
-
+        var newTokens = await GenerateTokensAsync(userId);
+        
+        _userContext.RefreshTokens.Remove(currentToken);
         await _userContext.SaveChangesAsync();
-
-        return new UpdateTokenResponse
-        {
-            AccessToken = newAccessToken,
-            RefreshToken = newRefreshToken
-        };
+		return newTokens;
     }
 
-    private async Task<LoginResponse> GenerateTokensAsync(User user)
+    private async Task<LoginResponse> GenerateTokensAsync(Guid userId)
     {
-        var accessToken = _tokenService.CreateAccessToken(user.Id.ToString());
-        var refreshToken = _tokenService.CreateRefreshToken(user.Id.ToString());
+        var accessToken = _tokenService.CreateAccessToken(userId.ToString());
+        var refreshToken = _tokenService.CreateRefreshToken(userId.ToString());
 
-        ArgumentNullException.ThrowIfNull(user.RefreshTokens);
-        var tokensToRemove = user.RefreshTokens
+        var tokensToRemove = await _userContext
+            .RefreshTokens
             .Where(t => t.ExpireDate < DateTimeOffset.UtcNow)
-            .ToList();
+            .ToListAsync();
 
         foreach (var expiredToken in tokensToRemove)
         {
-            user.RefreshTokens.Remove(expiredToken);
+            _userContext.RefreshTokens.Remove(expiredToken);
         }
 
-        user.RefreshTokens.Add(
-            new RefreshToken
-            {
-                Value = refreshToken,
-                ExpireDate = DateTimeOffset.UtcNow.AddDays(_refreshTokenLifetimeInDays),
-                UserId = user.Id
-            }
-        );
+        _userContext
+            .RefreshTokens
+            .Add(
+                new RefreshToken
+                {
+                    Value = refreshToken,
+                    ExpireDate = DateTimeOffset.UtcNow.AddDays(_refreshTokenLifetimeInDays),
+                    UserId = userId
+                }
+            );
 
-        await _userManager.UpdateAsync(user);
-
+        await _userContext.SaveChangesAsync();
         return new LoginResponse { AccessToken = accessToken, RefreshToken = refreshToken };
     }
 }
