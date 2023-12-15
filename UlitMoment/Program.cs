@@ -91,31 +91,6 @@ builder
             }
     );
 
-builder
-    .Services
-    .AddAuthorizationBuilder()
-    .AddPolicy(
-        "Student",
-        new AuthorizationPolicyBuilder("Bearer")
-            .RequireAuthenticatedUser()
-            .RequireRole(Role.Student.ToString())
-            .Build()
-    )
-    .AddPolicy(
-        "Teacher",
-        new AuthorizationPolicyBuilder("Bearer")
-            .RequireAuthenticatedUser()
-            .RequireRole(Role.Teacher.ToString())
-            .Build()
-    )
-    .AddPolicy(
-        "Admin",
-        new AuthorizationPolicyBuilder("Bearer")
-            .RequireAuthenticatedUser()
-            .RequireRole(Role.Admin.ToString())
-            .Build()
-    );
-
 // Database
 builder
     .Services

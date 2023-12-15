@@ -31,20 +31,21 @@ public class AuthService(
                 .Users
                 .Include(u => u.RefreshTokens)
                 .FirstOrDefaultAsync(u => u.Email == request.Email)
-            ?? throw new UserNotFoundException(request.Email);
+            ?? throw new UserNotFoundError(request.Email);
 
         if (!await _userManager.CheckPasswordAsync(user, request.Password))
         {
-            throw new WrongPasswordException();
+            throw new WrongPasswordError();
         }
 
-        return await GenerateTokens(user);
+        //переписать
+        return await GenerateTokensAsync(user);
     }
 
     public async Task<string> CreateUserAsync(SignOnRequest request)
     {
         if (await _userContext.Users.AnyAsync(u => u.Email == request.Email))
-            throw new UserAlreadyExistException(request.Email);
+            throw new UserAlreadyExistError(request.Email);
 
         var user = new User(request.Email);
         await _userManager.CreateAsync(user);
@@ -56,14 +57,10 @@ public class AuthService(
 
     public async Task<IdentityResult> SetPasswordAsync(SetPasswordRequest request)
     {
-        var user = await _userManager.FindByEmailAsync(request.Email);
-        if (user is null)
-            return IdentityResult.Failed(
-                new IdentityError { Code = "UserNotFound", Description = "User not found" }
-            );
-        ;
+        var user = await _userManager.FindByEmailAsync(request.Email)
+            ?? throw new UserNotFoundError(request.Email);
 
-        var result = await _userManager.ConfirmEmailAsync(user, request.Token);
+		var result = await _userManager.ConfirmEmailAsync(user, request.Token);
         if (!result.Succeeded)
             return result;
 
@@ -78,7 +75,7 @@ public class AuthService(
 
         if (!tokenIsValid)
         {
-            throw new InvalidTokenException();
+            throw new InvalidTokenError();
         }
 
         var userId = new Guid(claimsPrincipal!.Claims.Single(c => c.Type == "UserId").Value);
@@ -95,7 +92,7 @@ public class AuthService(
                 userId,
                 request.RefreshToken
             );
-            throw new UserNotFoundException(userId);
+            throw new UserNotFoundError(userId);
         }
         ArgumentNullException.ThrowIfNull(user.RefreshTokens);
 
@@ -108,7 +105,7 @@ public class AuthService(
                 userId,
                 request.RefreshToken
             );
-            throw new InvalidTokenException();
+            throw new InvalidTokenError();
         }
 
         var newAccessToken = _tokenService.CreateAccessToken(userId.ToString());
@@ -133,7 +130,7 @@ public class AuthService(
         };
     }
 
-    private async Task<LoginResponse> GenerateTokens(User user)
+    private async Task<LoginResponse> GenerateTokensAsync(User user)
     {
         var accessToken = _tokenService.CreateAccessToken(user.Id.ToString());
         var refreshToken = _tokenService.CreateRefreshToken(user.Id.ToString());
