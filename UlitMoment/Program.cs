@@ -1,21 +1,19 @@
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json.Serialization;
-
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-
 using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Json;
-
 using UlitMoment;
 using UlitMoment.Configuration;
 using UlitMoment.Database;
+using UlitMoment.Features.Auth;
 
 EnvLoader.Load(".env");
 
@@ -26,41 +24,51 @@ var applicationSettings = new ApplicationSettings();
 builder.Configuration.GetSection(ApplicationSettings.SectionName).Bind(applicationSettings);
 
 // Utilities
-builder.Services
-	.AddControllers()
-	.AddJsonOptions(options =>
-	{
-		options.JsonSerializerOptions.Converters.Add(new DateOnlyJsonConverter());
-		options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-	});
+builder
+    .Services
+    .AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new DateOnlyJsonConverter());
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 
 // Logging
-builder.Host.UseSerilog(
-    (context, configuration) =>
-    {
-        configuration.MinimumLevel
-            .Information()
-            .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-            .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)
-            .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
-            .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database", LogEventLevel.Warning)
-            .MinimumLevel.Override(
-                "Microsoft.AspNetCore.Hosting.Diagnostics",
-                LogEventLevel.Warning
-            )
-            .MinimumLevel.Override("Microsoft.AspNetCore.StaticFiles", LogEventLevel.Warning)
-            .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Query", LogEventLevel.Error)
-            .Enrich.FromLogContext();
+builder
+    .Host
+    .UseSerilog(
+        (context, configuration) =>
+        {
+            configuration
+                .MinimumLevel
+                .Information()
+                .MinimumLevel
+                .Override("Microsoft", LogEventLevel.Information)
+                .MinimumLevel
+                .Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)
+                .MinimumLevel
+                .Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+                .MinimumLevel
+                .Override("Microsoft.EntityFrameworkCore.Database", LogEventLevel.Warning)
+                .MinimumLevel
+                .Override("Microsoft.AspNetCore.Hosting.Diagnostics", LogEventLevel.Warning)
+                .MinimumLevel
+                .Override("Microsoft.AspNetCore.StaticFiles", LogEventLevel.Warning)
+                .MinimumLevel
+                .Override("Microsoft.EntityFrameworkCore.Query", LogEventLevel.Error)
+                .Enrich
+                .FromLogContext();
 
-        if (context.HostingEnvironment.IsProduction())
-            configuration.WriteTo.Console(new JsonFormatter());
-        else
-            configuration.WriteTo.Console();
-    }
-);
+            if (context.HostingEnvironment.IsProduction())
+                configuration.WriteTo.Console(new JsonFormatter());
+            else
+                configuration.WriteTo.Console();
+        }
+    );
 
 // Authorization
-builder.Services
+builder
+    .Services
     .AddAuthentication(options =>
     {
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -83,78 +91,84 @@ builder.Services
             }
     );
 
-builder.Services
+builder
+    .Services
     .AddAuthorizationBuilder()
     .AddPolicy(
-		"Student",
+        "Student",
         new AuthorizationPolicyBuilder("Bearer")
             .RequireAuthenticatedUser()
-            .RequireClaim(ClaimTypes.Role, "Student")
+            .RequireRole(Role.Student.ToString())
             .Build()
     )
     .AddPolicy(
-		"Teacher",
+        "Teacher",
         new AuthorizationPolicyBuilder("Bearer")
             .RequireAuthenticatedUser()
-            .RequireClaim(ClaimTypes.Role, "Teacher")
-            .Build()
+			.RequireRole(Role.Teacher.ToString())
+			.Build()
     )
     .AddPolicy(
-		"Admin",
+        "Admin",
         new AuthorizationPolicyBuilder("Bearer")
             .RequireAuthenticatedUser()
-            .RequireClaim(ClaimTypes.Role, "Admin")
-            .Build()
+			.RequireRole(Role.Admin.ToString())
+			.Build()
     );
 
 // Database
-builder.Services
-	.AddIdentity<User, IdentityRole<Guid>>()
-	.AddRoles<IdentityRole<Guid>>()
-	.AddRoleManager<RoleManager<IdentityRole<Guid>>>()
-	.AddEntityFrameworkStores<UserContext>();
+builder
+    .Services
+    .AddIdentity<User, IdentityRole<Guid>>()
+    .AddRoles<IdentityRole<Guid>>()
+    .AddRoleManager<RoleManager<IdentityRole<Guid>>>()
+    .AddEntityFrameworkStores<UserContext>();
 
-builder.Services.AddDbContext<UserContext>(
-	options => options.UseNpgsql(applicationSettings.DbConnectionString)
-);
+builder
+    .Services
+    .AddDbContext<UserContext>(
+        options => options.UseNpgsql(applicationSettings.DbConnectionString)
+    );
 
 // Services
 
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-	options.MapType<DateOnly>(() => new OpenApiSchema { Type = "string", Format = "date" });
-	options.AddSecurityDefinition(
-		"Bearer",
-		new OpenApiSecurityScheme
-		{
-			In = ParameterLocation.Header,
-			Description = "Please enter token",
-			Name = "Authorization",
-			Type = SecuritySchemeType.Http,
-			BearerFormat = "JWT",
-			Scheme = "bearer"
-		}
-	);
-	options.AddSecurityRequirement(
-		new OpenApiSecurityRequirement
-		{
-			{
-				new OpenApiSecurityScheme
-				{
-					Reference = new OpenApiReference
-					{
-						Type = ReferenceType.SecurityScheme,
-						Id = "Bearer"
-					}
-				},
-				Array.Empty<string>()
-			}
-		}
-	);
-});
+builder
+    .Services
+    .AddSwaggerGen(options =>
+    {
+        options.MapType<DateOnly>(() => new OpenApiSchema { Type = "string", Format = "date" });
+        options.AddSecurityDefinition(
+            "Bearer",
+            new OpenApiSecurityScheme
+            {
+                In = ParameterLocation.Header,
+                Description = "Please enter token",
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                BearerFormat = "JWT",
+                Scheme = "bearer"
+            }
+        );
+        options.AddSecurityRequirement(
+            new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    Array.Empty<string>()
+                }
+            }
+        );
+    });
 
 builder.Services.AddCors();
 
@@ -172,7 +186,7 @@ app.UseHttpsRedirection();
 
 app.UseSerilogRequestLogging();
 
-app.UseAuthorization(); 
+app.UseAuthorization();
 app.UseAuthentication();
 
 app.MapControllers();

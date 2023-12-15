@@ -2,4 +2,4 @@
 
 namespace UlitMoment.Database;
 
-public class User : IdentityUser<Guid> { }
+public class User(string email) : IdentityUser<Guid>(email) { }
