@@ -12,7 +12,6 @@ public class TokenService
     private readonly JWTSettings _settings;
     private readonly JwtSecurityTokenHandler _tokenHandler = new();
 
-    private readonly SymmetricSecurityKey _refreshSecurityKey;
     private readonly SigningCredentials _accessCredentials;
     private readonly SigningCredentials _refreshCredentials;
 
@@ -27,7 +26,6 @@ public class TokenService
         );
 
         var refreshKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.RefreshSecret));
-        _refreshSecurityKey = refreshKey;
         _refreshCredentials = new SigningCredentials(
             refreshKey,
             SecurityAlgorithms.HmacSha512Signature
@@ -62,30 +60,5 @@ public class TokenService
         );
 
         return _tokenHandler.WriteToken(token);
-    }
-
-    public (bool validationSuccess, ClaimsPrincipal? claims) ValidateRefreshToken(
-        string refreshToken
-    )
-    {
-        var validationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidIssuer = _settings.ValidIssuer,
-            ValidateAudience = true,
-            ValidAudience = _settings.ValidAudience,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = _refreshSecurityKey,
-        };
-
-        try
-        {
-            return (true, _tokenHandler.ValidateToken(refreshToken, validationParameters, out _));
-        }
-        catch (Exception)
-        {
-            return (false, null);
-        }
     }
 }

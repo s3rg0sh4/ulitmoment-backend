@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using UlitMoment.Common.Exceptions;
 using UlitMoment.Features.Auth.Contracts;
 
 namespace UlitMoment.Features.Auth;
@@ -15,43 +14,22 @@ public class AuthController(AuthService authService) : ControllerBase
     [HttpPost]
     public async Task<IActionResult> SignOn(SignOnRequest request)
     {
-        try
-        {
-            var token = await _authService.CreateUserAsync(request);
-            return Ok(token);
-        }
-        catch (HttpResponseError err)
-        {
-            return StatusCode(err.StatusCode, err.Message);
-        }
+        var token = await _authService.CreateUserAsync(request);
+        return Ok(token);
     }
 
     [HttpPost]
     public async Task<IActionResult> SignIn(SignInRequest request)
     {
-        try
-        {
-            await _authService.SignInAsync(request);
-            return Ok();
-        }
-        catch (HttpResponseError err)
-        {
-            return StatusCode(err.StatusCode, err.Message);
-        }
+        await _authService.SignInAsync(request);
+        return Ok();
     }
 
     [HttpPost]
     public async Task<IActionResult> SetPassword(SetPasswordRequest request)
     {
-        try
-        {
-            await _authService.SetPasswordAsync(request);
-            return Ok();
-        }
-        catch (HttpResponseError err)
-        {
-            return StatusCode(err.StatusCode, err.Message);
-        }
+        await _authService.SetPasswordAsync(request);
+        return Ok();
     }
 
     [HttpPost]
@@ -59,15 +37,9 @@ public class AuthController(AuthService authService) : ControllerBase
     public async Task<IActionResult> UpdateToken()
     {
         var userId = User.Claims.First(c => c.Type == "UserId").Value;
-        var token = await HttpContext.GetTokenAsync("refresh_token");
-        try
-        {
-            var result = await _authService.UpdateTokenAsync(new Guid(userId), token!);
-            return Ok(result);
-        }
-        catch (HttpResponseError err)
-        {
-            return StatusCode(err.StatusCode, err.Message);
-        }
+        var token = HttpContext.Request.Headers.Authorization.First()!["Bearer ".Length..];
+
+		var result = await _authService.UpdateTokenAsync(new Guid(userId), token!);
+        return Ok(result);
     }
 }

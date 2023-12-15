@@ -1,4 +1,4 @@
-﻿using UlitMoment.Common.Exceptions;
+﻿using UlitMoment.Configuration;
 
 namespace UlitMoment.Features.Auth;
 

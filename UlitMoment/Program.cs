@@ -12,6 +12,8 @@ using Serilog.Formatting.Json;
 using UlitMoment;
 using UlitMoment.Configuration;
 using UlitMoment.Database;
+using UlitMoment.Features.Auth;
+using UlitMoment.Middleware;
 
 EnvLoader.Load(".env");
 
@@ -115,6 +117,8 @@ builder
     );
 
 // Services
+builder.Services.AddScoped<TokenService>();
+builder.Services.AddScoped<AuthService>();
 
 builder.Services.AddControllers();
 
@@ -163,6 +167,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseMiddleware<ErrorHandlingMiddleware>();
 
 app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 

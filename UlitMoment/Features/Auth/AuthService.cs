@@ -62,12 +62,12 @@ public class AuthService(
             if (!result.Succeeded)
                 throw new IdentityResponseError(result.Errors);
         }
-        
+
         {
             var result = await _userManager.AddPasswordAsync(user, request.Password);
-			if (!result.Succeeded)
-				throw new IdentityResponseError(result.Errors);
-		}
+            if (!result.Succeeded)
+                throw new IdentityResponseError(result.Errors);
+        }
     }
 
     public async Task<LoginResponse> UpdateTokenAsync(Guid userId, string refreshToken)
@@ -82,10 +82,10 @@ public class AuthService(
             ?? throw new InvalidTokenError();
 
         var newTokens = await GenerateTokensAsync(userId);
-        
+
         _userContext.RefreshTokens.Remove(currentToken);
         await _userContext.SaveChangesAsync();
-		return newTokens;
+        return newTokens;
     }
 
     private async Task<LoginResponse> GenerateTokensAsync(Guid userId)
