@@ -105,15 +105,15 @@ builder
         "Teacher",
         new AuthorizationPolicyBuilder("Bearer")
             .RequireAuthenticatedUser()
-			.RequireRole(Role.Teacher.ToString())
-			.Build()
+            .RequireRole(Role.Teacher.ToString())
+            .Build()
     )
     .AddPolicy(
         "Admin",
         new AuthorizationPolicyBuilder("Bearer")
             .RequireAuthenticatedUser()
-			.RequireRole(Role.Admin.ToString())
-			.Build()
+            .RequireRole(Role.Admin.ToString())
+            .Build()
     );
 
 // Database
