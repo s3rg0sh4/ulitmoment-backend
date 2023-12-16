@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UlitMoment.Features.Auth.Contracts;
 
@@ -39,7 +38,7 @@ public class AuthController(AuthService authService) : ControllerBase
         var userId = User.Claims.First(c => c.Type == "UserId").Value;
         var token = HttpContext.Request.Headers.Authorization.First()!["Bearer ".Length..];
 
-		var result = await _authService.UpdateTokenAsync(new Guid(userId), token!);
+        var result = await _authService.UpdateTokenAsync(new Guid(userId), token!);
         return Ok(result);
     }
 }
