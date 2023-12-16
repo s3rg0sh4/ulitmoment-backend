@@ -1,4 +1,4 @@
-﻿namespace UlitMoment.Features.Auth;
+﻿namespace UlitMoment.Database;
 
 public enum Role
 {

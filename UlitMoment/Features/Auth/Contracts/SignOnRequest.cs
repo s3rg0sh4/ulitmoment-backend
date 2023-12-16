@@ -1,4 +1,6 @@
-﻿namespace UlitMoment.Features.Auth.Contracts;
+﻿using UlitMoment.Database;
+
+namespace UlitMoment.Features.Auth.Contracts;
 
 public class SignOnRequest
 {

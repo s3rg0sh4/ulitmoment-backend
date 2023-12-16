@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using UlitMoment.Database;
 using UlitMoment.Features.Auth;
 
 namespace UlitMoment.Features;
@@ -12,17 +13,6 @@ public class TestController(AuthService authService) : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Test()
     {
-        var token = await _authService.CreateUserAsync(
-            new() { Email = "s3rg0sh4@gmail.com", Role = Role.Admin }
-        );
-
-        await _authService.SetPasswordAsync(new()
-        {
-            Email = "s3rg0sh4@gmail.com",
-            Password = "s3rg0sh4",
-            Token = token
-        });
-
         return Ok();
     }
 }

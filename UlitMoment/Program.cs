@@ -20,6 +20,10 @@ EnvLoader.Load(".env");
 var builder = WebApplication.CreateBuilder(args);
 
 // Application settings
+builder
+    .Services
+    .AddOptions<ApplicationSettings>()
+    .BindConfiguration(ApplicationSettings.SectionName);
 var applicationSettings = new ApplicationSettings();
 builder.Configuration.GetSection(ApplicationSettings.SectionName).Bind(applicationSettings);
 
@@ -102,13 +106,24 @@ builder
             }
     );
 
+builder.Services.Configure<IdentityOptions>(options =>
+{
+	options.Password.RequireDigit = false;
+	options.Password.RequireLowercase = false;
+	options.Password.RequireNonAlphanumeric = false;
+	options.Password.RequireUppercase = false;
+	options.Password.RequiredUniqueChars = 1;
+	options.Password.RequiredLength = 2;
+});
+
 // Database
 builder
     .Services
     .AddIdentity<User, IdentityRole<Guid>>()
     .AddRoles<IdentityRole<Guid>>()
     .AddRoleManager<RoleManager<IdentityRole<Guid>>>()
-    .AddEntityFrameworkStores<UserContext>();
+    .AddEntityFrameworkStores<UserContext>()
+    .AddDefaultTokenProviders();
 
 builder
     .Services
@@ -166,6 +181,29 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+
+using (var scope = app.Services.CreateScope())
+{
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+
+    foreach (var roleName in (Role[])Enum.GetValues(typeof(Role)))
+    {
+        if (!await roleManager.RoleExistsAsync(roleName.ToString()))
+        {
+            await roleManager.CreateAsync(new IdentityRole<Guid>(roleName.ToString()));
+        }
+    }
+
+    var user = await userManager.FindByNameAsync("s3rg0sh4@gmail.com");
+    if (user == null)
+    {
+        user = new User("s3rg0sh4@gmail.com");
+
+        await userManager.CreateAsync(user, "s3rg0sh4");
+        await userManager.AddToRoleAsync(user, "Admin");
+    }
 }
 
 app.UseMiddleware<ErrorHandlingMiddleware>();
