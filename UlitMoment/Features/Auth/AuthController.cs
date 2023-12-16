@@ -20,8 +20,8 @@ public class AuthController(AuthService authService) : ControllerBase
     [HttpPost]
     public async Task<IActionResult> SignIn(SignInRequest request)
     {
-        await _authService.SignInAsync(request);
-        return Ok();
+        var response = await _authService.SignInAsync(request);
+        return Ok(response);
     }
 
     [HttpPost]
@@ -38,7 +38,7 @@ public class AuthController(AuthService authService) : ControllerBase
         var userId = User.Claims.First(c => c.Type == "UserId").Value;
         var token = HttpContext.Request.Headers.Authorization.First()!["Bearer ".Length..];
 
-        var result = await _authService.UpdateTokenAsync(new Guid(userId), token!);
-        return Ok(result);
+        var response = await _authService.UpdateTokenAsync(new Guid(userId), token!);
+        return Ok(response);
     }
 }
