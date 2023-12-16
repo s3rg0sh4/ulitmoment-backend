@@ -1,44 +1,47 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using UlitMoment.Database;
 using UlitMoment.Features.Auth.Contracts;
 
 namespace UlitMoment.Features.Auth;
 
 [ApiController]
-[Route("[controller]/[action]")]
+[Route("auth")]
 public class AuthController(AuthService authService) : ControllerBase
 {
     private readonly AuthService _authService = authService;
 
-    [HttpPost]
+    [HttpPost("sign-on")]
     public async Task<IActionResult> SignOn(SignOnRequest request)
     {
         var token = await _authService.CreateUserAsync(request);
         return Ok(token);
     }
 
-    [HttpPost]
+    [HttpPost("sign-in")]
     public async Task<IActionResult> SignIn(SignInRequest request)
     {
         var response = await _authService.SignInAsync(request);
         return Ok(response);
     }
 
-    [HttpPost]
+    [HttpPost("sign-up")]
     public async Task<IActionResult> SetPassword(SetPasswordRequest request)
     {
         await _authService.SetPasswordAsync(request);
         return Ok();
     }
 
-    [HttpPost]
-    [Authorize("RefreshToken")]
+    [Authorize(AuthenticationSchemes = "Refresh")]
+    [HttpPost("refresh-token")]
     public async Task<IActionResult> UpdateToken()
     {
         var userId = User.Claims.First(c => c.Type == "UserId").Value;
-        var token = HttpContext.Request.Headers.Authorization.First()!["Bearer ".Length..];
+		string authorizationHeader = HttpContext.Request.Headers.Authorization!;
+        var token = authorizationHeader["Bearer ".Length..];
 
-        var response = await _authService.UpdateTokenAsync(new Guid(userId), token!);
+		var response = await _authService.UpdateTokenAsync(new Guid(userId), token!);
         return Ok(response);
     }
 }

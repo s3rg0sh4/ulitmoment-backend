@@ -4,7 +4,8 @@ namespace UlitMoment.Database;
 
 public class User : IdentityUser<Guid>
 {
-    public User(string email) : base(email)
+    public User(string email)
+        : base(email)
     {
         base.Email = email;
     }

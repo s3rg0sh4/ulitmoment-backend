@@ -38,7 +38,7 @@ public class TokenService
 
         var token = new JwtSecurityToken(
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(_settings.TokenValidityInMinutes),
+            expires: DateTime.UtcNow.AddMinutes(_settings.AccessTokenValidityInMinutes),
             signingCredentials: _accessCredentials,
             issuer: _settings.ValidIssuer,
             audience: _settings.ValidAudience

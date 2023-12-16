@@ -26,7 +26,7 @@ public class JWTSettings
     public required string ValidIssuer { get; init; }
 
     [Range(1, 120)]
-    public int TokenValidityInMinutes { get; init; } = 30;
+    public int AccessTokenValidityInMinutes { get; init; } = 30;
 
     [Range(1, 7)]
     public int RefreshTokenValidityInDays { get; init; } = 7;

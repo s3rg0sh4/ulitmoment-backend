@@ -71,16 +71,18 @@ builder
     );
 
 // Auth
+
 builder
     .Services
-    .AddAuthorizationBuilder()
-    .SetDefaultPolicy(
-        new AuthorizationPolicyBuilder("Bearer")
-            .RequireAuthenticatedUser()
-            .RequireClaim("UserId")
-            .Build()
-    )
-    .AddPolicy("RefreshToken", policy => policy.RequireAuthenticatedUser().RequireClaim("UserId"));
+    .Configure<IdentityOptions>(options =>
+    {
+        options.Password.RequireDigit = false;
+        options.Password.RequireLowercase = false;
+        options.Password.RequireNonAlphanumeric = false;
+        options.Password.RequireUppercase = false;
+        options.Password.RequiredUniqueChars = 1;
+        options.Password.RequiredLength = 2;
+    });
 
 builder
     .Services
@@ -104,17 +106,59 @@ builder
                 ValidAudience = applicationSettings.JWT.ValidAudience,
                 ClockSkew = TimeSpan.FromSeconds(30)
             }
+    )
+    .AddJwtBearer(
+        "Refresh",
+        options =>
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(
+                    Encoding.UTF8.GetBytes(applicationSettings.JWT.RefreshSecret)
+                ),
+                ValidateIssuer = true,
+                ValidIssuer = applicationSettings.JWT.ValidIssuer,
+                ValidateAudience = true,
+                ValidAudience = applicationSettings.JWT.ValidAudience,
+                ClockSkew = TimeSpan.FromSeconds(30)
+            }
     );
 
-builder.Services.Configure<IdentityOptions>(options =>
-{
-	options.Password.RequireDigit = false;
-	options.Password.RequireLowercase = false;
-	options.Password.RequireNonAlphanumeric = false;
-	options.Password.RequireUppercase = false;
-	options.Password.RequiredUniqueChars = 1;
-	options.Password.RequiredLength = 2;
-});
+builder
+    .Services
+    .AddAuthorizationBuilder()
+    .AddPolicy(
+        "Student",
+        new AuthorizationPolicyBuilder("Bearer")
+            .RequireAuthenticatedUser()
+            .RequireClaim("UserId")
+            .RequireRole("Student")
+            .Build()
+    )
+    .AddPolicy(
+        "Curator",
+        new AuthorizationPolicyBuilder("Bearer")
+            .RequireAuthenticatedUser()
+            .RequireClaim("UserId")
+            .RequireRole("Curator")
+            .Build()
+    )
+    .AddPolicy(
+        "Teacher",
+        new AuthorizationPolicyBuilder("Bearer")
+            .RequireAuthenticatedUser()
+            .RequireClaim("UserId")
+            .RequireRole("Teacher")
+            .Build()
+    )
+    .AddPolicy(
+        "Admin",
+        new AuthorizationPolicyBuilder("Bearer")
+            .RequireAuthenticatedUser()
+            .RequireClaim("UserId")
+            .RequireRole("Admin")
+            .Build()
+    );
 
 // Database
 builder
@@ -152,7 +196,7 @@ builder
                 Name = "Authorization",
                 Type = SecuritySchemeType.Http,
                 BearerFormat = "JWT",
-                Scheme = "bearer"
+                Scheme = "Bearer"
             }
         );
         options.AddSecurityRequirement(
