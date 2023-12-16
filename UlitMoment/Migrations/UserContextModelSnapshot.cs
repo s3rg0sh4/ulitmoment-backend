@@ -154,8 +154,9 @@ namespace UlitMoment.Migrations
 
             modelBuilder.Entity("UlitMoment.Database.RefreshToken", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset>("ExpireDate")
                         .HasColumnType("timestamp with time zone");

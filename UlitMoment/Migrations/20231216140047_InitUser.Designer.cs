@@ -12,7 +12,7 @@ using UlitMoment.Database;
 namespace UlitMoment.Migrations
 {
     [DbContext(typeof(UserContext))]
-    [Migration("20231216114411_InitUser")]
+    [Migration("20231216140047_InitUser")]
     partial class InitUser
     {
         /// <inheritdoc />
@@ -157,8 +157,9 @@ namespace UlitMoment.Migrations
 
             modelBuilder.Entity("UlitMoment.Database.RefreshToken", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset>("ExpireDate")
                         .HasColumnType("timestamp with time zone");
