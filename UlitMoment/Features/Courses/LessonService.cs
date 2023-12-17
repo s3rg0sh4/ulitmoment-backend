@@ -2,6 +2,7 @@
 using UlitMoment.Common.HttpResponseErrors;
 using UlitMoment.Database;
 using UlitMoment.Database.Courses;
+using UlitMoment.Features.Courses.Contracts;
 
 namespace UlitMoment.Features.Lessons;
 
@@ -9,12 +10,12 @@ public class LessonService(UserContext userContext)
 {
     private readonly UserContext _userContext = userContext;
 
-    public async Task<Guid> CreateLessonAsync(Guid courseId, string name, string description)
+    public async Task<Guid> CreateLessonAsync(Guid courseId, CreateLessonRequest request)
     {
         var course = new Lesson
         {
-            Name = name,
-            Description = description,
+            Name = request.Name,
+            Description = request.Description,
             CourseId = courseId
         };
 

@@ -2,6 +2,7 @@
 using UlitMoment.Common.HttpResponseErrors;
 using UlitMoment.Database;
 using UlitMoment.Database.Courses;
+using UlitMoment.Features.Courses.Contracts;
 
 namespace UlitMoment.Features.Courses;
 

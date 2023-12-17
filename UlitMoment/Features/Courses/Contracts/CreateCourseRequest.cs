@@ -1,4 +1,4 @@
-﻿namespace UlitMoment.Features.Courses;
+﻿namespace UlitMoment.Features.Courses.Contracts;
 
 public class CreateCourseRequest
 {

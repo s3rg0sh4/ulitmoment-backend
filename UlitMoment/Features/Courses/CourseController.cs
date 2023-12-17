@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using UlitMoment.Common.HttpResponseErrors;
 using UlitMoment.Common.Services;
 using UlitMoment.Database;
+using UlitMoment.Features.Courses.Contracts;
 
 namespace UlitMoment.Features.Courses;
 
