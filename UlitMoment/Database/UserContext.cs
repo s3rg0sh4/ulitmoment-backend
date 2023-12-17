@@ -10,6 +10,7 @@ public class UserContext(DbContextOptions<UserContext> options)
 {
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<Student> Students { get; set; }
+    public DbSet<Teacher> Teachers { get; set; }
 
     public DbSet<Course> Courses { get; set; }
     public DbSet<Lesson> Lessons { get; set; }

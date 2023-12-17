@@ -1,8 +1,8 @@
 ﻿using UlitMoment.Database;
 
-namespace UlitMoment.Features.Auth.Contracts;
+namespace UlitMoment.Features.UserRegistration.Contracts;
 
-public class SignOnRequest
+public class InviteUserRequest
 {
     public required string Email { get; init; }
     public required Role Role { get; init; }

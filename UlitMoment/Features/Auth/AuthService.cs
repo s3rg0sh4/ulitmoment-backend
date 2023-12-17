@@ -5,6 +5,7 @@ using UlitMoment.Configuration;
 using UlitMoment.Database;
 using UlitMoment.Features.Auth.Contracts;
 using UlitMoment.Features.Auth.Errors;
+using UlitMoment.Features.UserInfo;
 
 namespace UlitMoment.Features.Auth;
 
@@ -36,38 +37,6 @@ public class AuthService(
             throw new WrongPasswordError();
 
         return await GenerateTokensAsync(user.Id);
-    }
-
-    public async Task<string> CreateUserAsync(SignOnRequest request)
-    {
-        if (await _userContext.Users.AnyAsync(u => u.Email == request.Email))
-            throw new UserAlreadyExistError(request.Email);
-
-        var user = new User(request.Email);
-        await _userManager.CreateAsync(user);
-        await _userManager.AddToRoleAsync(user, request.Role.ToString());
-
-        var confirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-        return confirmationToken;
-    }
-
-    public async Task SetPasswordAsync(SetPasswordRequest request)
-    {
-        var user =
-            await _userManager.FindByEmailAsync(request.Email)
-            ?? throw new UserNotFoundError(request.Email);
-
-        {
-            var result = await _userManager.ConfirmEmailAsync(user, request.Token);
-            if (!result.Succeeded)
-                throw new IdentityResponseError(result.Errors);
-        }
-
-        {
-            var result = await _userManager.AddPasswordAsync(user, request.Password);
-            if (!result.Succeeded)
-                throw new IdentityResponseError(result.Errors);
-        }
     }
 
     public async Task<LoginResponse> UpdateTokenAsync(Guid userId, string refreshToken)

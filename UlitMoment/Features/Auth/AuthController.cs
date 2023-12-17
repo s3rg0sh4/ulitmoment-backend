@@ -10,25 +10,11 @@ public class AuthController(AuthService authService) : ControllerBase
 {
     private readonly AuthService _authService = authService;
 
-    [HttpPost("sign-on")]
-    public async Task<IActionResult> SignOn(SignOnRequest request)
-    {
-        var token = await _authService.CreateUserAsync(request);
-        return Ok(token);
-    }
-
     [HttpPost("sign-in")]
     public async Task<IActionResult> SignIn(SignInRequest request)
     {
         var response = await _authService.SignInAsync(request);
         return Ok(response);
-    }
-
-    [HttpPost("sign-up")]
-    public async Task<IActionResult> SetPassword(SetPasswordRequest request)
-    {
-        await _authService.SetPasswordAsync(request);
-        return Ok();
     }
 
     [Authorize(AuthenticationSchemes = "Refresh")]

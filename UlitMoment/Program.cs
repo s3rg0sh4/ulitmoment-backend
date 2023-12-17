@@ -129,39 +129,6 @@ builder
     .AddAuthorizationBuilder()
     .SetDefaultPolicy(new AuthorizationPolicyBuilder("Bearer").RequireAuthenticatedUser().Build());
 
-//.AddPolicy(
-//    "Student",
-//    new AuthorizationPolicyBuilder("Bearer")
-//        .RequireAuthenticatedUser()
-//        .RequireClaim("UserId")
-//        .RequireRole("Student")
-//        .Build()
-//)
-//.AddPolicy(
-//    "Curator",
-//    new AuthorizationPolicyBuilder("Bearer")
-//        .RequireAuthenticatedUser()
-//        .RequireClaim("UserId")
-//        .RequireRole("Curator")
-//        .Build()
-//)
-//.AddPolicy(
-//    "Teacher",
-//    new AuthorizationPolicyBuilder("Bearer")
-//        .RequireAuthenticatedUser()
-//        .RequireClaim("UserId")
-//        .RequireRole("Teacher")
-//        .Build()
-//)
-//.AddPolicy(
-//    "Admin",
-//    new AuthorizationPolicyBuilder("Bearer")
-//        .RequireAuthenticatedUser()
-//        .RequireClaim("UserId")
-//        .RequireRole("Admin")
-//        .Build()
-//);
-
 // Database
 builder
     .Services

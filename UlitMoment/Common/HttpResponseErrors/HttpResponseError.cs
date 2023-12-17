@@ -1,6 +1,6 @@
 ﻿namespace UlitMoment.Common.HttpResponseErrors;
 
-public class HttpResponseError(int statusCode, string message) : Exception(message)
+public abstract class HttpResponseError(int statusCode, string message) : Exception(message)
 {
     public int StatusCode { get; } = statusCode;
 }

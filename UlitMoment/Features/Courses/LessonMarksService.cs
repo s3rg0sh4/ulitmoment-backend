@@ -26,8 +26,8 @@ public class LessonMarksService(UserContext userContext)
         var student =
             await _userContext
                 .Students
-                .Include(l => l.LessonMarks)
-                .FirstOrDefaultAsync(l => l.Id == studentId)
+                .Include(s => s.LessonMarks)
+                .FirstOrDefaultAsync(s => s.Id == studentId)
             ?? throw new NotFoundError(nameof(Student), studentId);
 
         return student.LessonMarks!;
@@ -46,7 +46,8 @@ public class LessonMarksService(UserContext userContext)
             {
                 Mark = mark,
                 StudentId = studentId,
-                LessonId = lessonId
+                LessonId = lessonId,
+                Date = DateTimeOffset.UtcNow
             }
         );
         await _userContext.SaveChangesAsync();
