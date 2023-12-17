@@ -10,9 +10,14 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Json;
 using UlitMoment;
+using UlitMoment.Common.Services;
 using UlitMoment.Configuration;
 using UlitMoment.Database;
 using UlitMoment.Features.Auth;
+using UlitMoment.Features.Courses;
+using UlitMoment.Features.Lessons;
+using UlitMoment.Features.UserInfo;
+using UlitMoment.Features.UserRegistration;
 using UlitMoment.Middleware;
 
 EnvLoader.Load(".env");
@@ -147,6 +152,12 @@ builder
 // Services
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<UserRegistrationSerivce>();
+builder.Services.AddScoped<UserInfoService>();
+builder.Services.AddScoped<CourseService>();
+builder.Services.AddScoped<LessonService>();
+builder.Services.AddScoped<LessonMarksService>();
+builder.Services.AddScoped<UserService>();
 
 builder.Services.AddControllers();
 
@@ -212,7 +223,12 @@ using (var scope = app.Services.CreateScope())
     var user = await userManager.FindByNameAsync("s3rg0sh4@gmail.com");
     if (user == null)
     {
-        user = new User("s3rg0sh4@gmail.com");
+        user = new User("s3rg0sh4@gmail.com")
+        {
+            Surname = "Ларичев",
+            Forename = "Сергей",
+            Patronymic = "Юрьевич"
+        };
 
         await userManager.CreateAsync(user, "s3rg0sh4");
         await userManager.AddToRoleAsync(user, "Admin");
