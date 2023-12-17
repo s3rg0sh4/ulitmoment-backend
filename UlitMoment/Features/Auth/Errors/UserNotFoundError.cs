@@ -1,4 +1,4 @@
-﻿using UlitMoment.Configuration;
+﻿using UlitMoment.Common.HttpResponseErrors;
 
 namespace UlitMoment.Features.Auth;
 

@@ -1,4 +1,4 @@
-﻿namespace UlitMoment.Configuration;
+﻿namespace UlitMoment.Common.HttpResponseErrors;
 
 public class HttpResponseError(int statusCode, string message) : Exception(message)
 {

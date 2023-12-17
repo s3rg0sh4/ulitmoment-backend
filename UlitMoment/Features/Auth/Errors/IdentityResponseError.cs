@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 using Microsoft.AspNetCore.Identity;
-using UlitMoment.Configuration;
+using UlitMoment.Common.HttpResponseErrors;
 
 namespace UlitMoment.Features.Auth.Errors;
 

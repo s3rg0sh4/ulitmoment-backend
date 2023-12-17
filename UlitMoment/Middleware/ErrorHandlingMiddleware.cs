@@ -1,5 +1,5 @@
 ﻿using System.Text.Json;
-using UlitMoment.Configuration;
+using UlitMoment.Common.HttpResponseErrors;
 
 namespace UlitMoment.Middleware;
 
