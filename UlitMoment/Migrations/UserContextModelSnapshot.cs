@@ -22,6 +22,21 @@ namespace UlitMoment.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("CourseStudent", b =>
+                {
+                    b.Property<Guid>("CoursesId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("StudentsId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("CoursesId", "StudentsId");
+
+                    b.HasIndex("StudentsId");
+
+                    b.ToTable("CourseStudent");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
                 {
                     b.Property<Guid>("Id")
@@ -152,6 +167,81 @@ namespace UlitMoment.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("UlitMoment.Database.Courses.Course", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("TeacherId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TeacherId");
+
+                    b.ToTable("Courses");
+                });
+
+            modelBuilder.Entity("UlitMoment.Database.Courses.Lesson", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseId");
+
+                    b.ToTable("Lessons");
+                });
+
+            modelBuilder.Entity("UlitMoment.Database.Courses.StudentLessonMark", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("Date")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("LessonId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Mark")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LessonId");
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("StudentLessonMark");
+                });
+
             modelBuilder.Entity("UlitMoment.Database.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
@@ -175,6 +265,29 @@ namespace UlitMoment.Migrations
                     b.ToTable("RefreshTokens");
                 });
 
+            modelBuilder.Entity("UlitMoment.Database.School", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Schools");
+                });
+
             modelBuilder.Entity("UlitMoment.Database.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -188,12 +301,20 @@ namespace UlitMoment.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("text");
 
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)");
+
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("Forename")
+                        .HasColumnType("text");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("boolean");
@@ -212,6 +333,9 @@ namespace UlitMoment.Migrations
                     b.Property<string>("PasswordHash")
                         .HasColumnType("text");
 
+                    b.Property<string>("Patronymic")
+                        .HasColumnType("text");
+
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("text");
 
@@ -219,6 +343,9 @@ namespace UlitMoment.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("SecurityStamp")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Surname")
                         .HasColumnType("text");
 
                     b.Property<bool>("TwoFactorEnabled")
@@ -238,6 +365,44 @@ namespace UlitMoment.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("User");
+
+                    b.UseTphMappingStrategy();
+                });
+
+            modelBuilder.Entity("UlitMoment.Database.Student", b =>
+                {
+                    b.HasBaseType("UlitMoment.Database.User");
+
+                    b.Property<Guid?>("SchoolId")
+                        .HasColumnType("uuid");
+
+                    b.HasIndex("SchoolId");
+
+                    b.HasDiscriminator().HasValue("Student");
+                });
+
+            modelBuilder.Entity("UlitMoment.Database.Teacher", b =>
+                {
+                    b.HasBaseType("UlitMoment.Database.User");
+
+                    b.HasDiscriminator().HasValue("Teacher");
+                });
+
+            modelBuilder.Entity("CourseStudent", b =>
+                {
+                    b.HasOne("UlitMoment.Database.Courses.Course", null)
+                        .WithMany()
+                        .HasForeignKey("CoursesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("UlitMoment.Database.Student", null)
+                        .WithMany()
+                        .HasForeignKey("StudentsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -291,6 +456,43 @@ namespace UlitMoment.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("UlitMoment.Database.Courses.Course", b =>
+                {
+                    b.HasOne("UlitMoment.Database.Teacher", null)
+                        .WithMany("Courses")
+                        .HasForeignKey("TeacherId");
+                });
+
+            modelBuilder.Entity("UlitMoment.Database.Courses.Lesson", b =>
+                {
+                    b.HasOne("UlitMoment.Database.Courses.Course", "Course")
+                        .WithMany("Lessons")
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Course");
+                });
+
+            modelBuilder.Entity("UlitMoment.Database.Courses.StudentLessonMark", b =>
+                {
+                    b.HasOne("UlitMoment.Database.Courses.Lesson", "Lesson")
+                        .WithMany("StudentMarks")
+                        .HasForeignKey("LessonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("UlitMoment.Database.Student", "Student")
+                        .WithMany("LessonMarks")
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Lesson");
+
+                    b.Navigation("Student");
+                });
+
             modelBuilder.Entity("UlitMoment.Database.RefreshToken", b =>
                 {
                     b.HasOne("UlitMoment.Database.User", "User")
@@ -302,9 +504,43 @@ namespace UlitMoment.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("UlitMoment.Database.Student", b =>
+                {
+                    b.HasOne("UlitMoment.Database.School", "School")
+                        .WithMany("Students")
+                        .HasForeignKey("SchoolId");
+
+                    b.Navigation("School");
+                });
+
+            modelBuilder.Entity("UlitMoment.Database.Courses.Course", b =>
+                {
+                    b.Navigation("Lessons");
+                });
+
+            modelBuilder.Entity("UlitMoment.Database.Courses.Lesson", b =>
+                {
+                    b.Navigation("StudentMarks");
+                });
+
+            modelBuilder.Entity("UlitMoment.Database.School", b =>
+                {
+                    b.Navigation("Students");
+                });
+
             modelBuilder.Entity("UlitMoment.Database.User", b =>
                 {
                     b.Navigation("RefreshTokens");
+                });
+
+            modelBuilder.Entity("UlitMoment.Database.Student", b =>
+                {
+                    b.Navigation("LessonMarks");
+                });
+
+            modelBuilder.Entity("UlitMoment.Database.Teacher", b =>
+                {
+                    b.Navigation("Courses");
                 });
 #pragma warning restore 612, 618
         }
