@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using UlitMoment.Configuration;
+using UlitMoment.Database;
 
 namespace UlitMoment.Features.Auth;
 
@@ -32,9 +33,13 @@ public class TokenService
         );
     }
 
-    public string CreateAccessToken(string userId)
+    public string CreateAccessToken(string userId, Role role)
     {
-        var claims = new List<Claim> { new("UserId", userId) };
+        var claims = new List<Claim>
+        {
+            new("UserId", userId),
+            new(ClaimTypes.Role, role.ToString())
+        };
 
         var token = new JwtSecurityToken(
             claims: claims,

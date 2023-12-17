@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -132,7 +133,49 @@ builder
 builder
     .Services
     .AddAuthorizationBuilder()
-    .SetDefaultPolicy(new AuthorizationPolicyBuilder("Bearer").RequireAuthenticatedUser().Build());
+    .SetDefaultPolicy(
+        new AuthorizationPolicyBuilder("Bearer")
+            .RequireAuthenticatedUser()
+            .RequireClaim("UserId")
+            .RequireClaim(ClaimTypes.Role)
+            .Build()
+	)
+	.AddPolicy(
+		"Admin",
+		new AuthorizationPolicyBuilder("Bearer")
+			.RequireAuthenticatedUser()
+			.RequireClaim("UserId")
+			.RequireClaim(ClaimTypes.Role, "Admin")
+			.Build()
+	)
+	.AddPolicy(
+        "Teacher",
+        new AuthorizationPolicyBuilder("Bearer")
+            .RequireAuthenticatedUser()
+            .RequireClaim("UserId")
+            .RequireClaim(ClaimTypes.Role, "Teacher")
+            .Build()
+    )
+    .AddPolicy(
+        "Curator",
+        new AuthorizationPolicyBuilder("Bearer")
+            .RequireAuthenticatedUser()
+            .RequireClaim("UserId")
+            .RequireClaim(ClaimTypes.Role, "Curator")
+            .Build()
+    )
+    .AddPolicy(
+        "Student",
+        new AuthorizationPolicyBuilder("Bearer")
+            .RequireAuthenticatedUser()
+            .RequireClaim("UserId")
+            .RequireClaim(ClaimTypes.Role, "Student")
+            .Build()
+    )
+    .AddPolicy(
+        "Refresh",
+        new AuthorizationPolicyBuilder("Bearer").RequireAuthenticatedUser().Build()
+    );
 
 // Database
 builder
@@ -225,9 +268,9 @@ using (var scope = app.Services.CreateScope())
     {
         user = new User("s3rg0sh4@gmail.com")
         {
-            Surname = "Ларичев",
-            Forename = "Сергей",
-            Patronymic = "Юрьевич"
+            Surname = "пїЅпїЅпїЅпїЅпїЅпїЅпїЅ",
+            Forename = "пїЅпїЅпїЅпїЅпїЅпїЅ",
+            Patronymic = "пїЅпїЅпїЅпїЅпїЅпїЅпїЅ"
         };
 
         await userManager.CreateAsync(user, "s3rg0sh4");

@@ -1,5 +1,6 @@
-﻿namespace UlitMoment.Common.HttpResponseErrors;
+﻿using UlitMoment.Database;
 
-public class InvalidRoleError(string roleName)
-	: HttpResponseError(403, $"Method is forbidden for {roleName} user")
-{ }
+namespace UlitMoment.Common.HttpResponseErrors;
+
+public class InvalidRoleError(Role role)
+    : HttpResponseError(401, $"Method is forbidden for {role} user") { }

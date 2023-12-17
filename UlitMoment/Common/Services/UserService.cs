@@ -14,7 +14,7 @@ public class UserService(UserManager<User> userManager)
         var role = await GetUserRoleAsync(user);
         return role;
     }
-    
+
     public async Task<Role> GetUserRoleAsync(User user)
     {
         var role = (await _userManager.GetRolesAsync(user)).Single();

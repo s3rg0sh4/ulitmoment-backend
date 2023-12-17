@@ -17,7 +17,7 @@ public class AuthController(AuthService authService) : ControllerBase
         return Ok(response);
     }
 
-    [Authorize(AuthenticationSchemes = "Refresh")]
+    [Authorize(AuthenticationSchemes = "Refresh", Policy = "Refresh")]
     [HttpPost("refresh-token")]
     public async Task<IActionResult> UpdateToken()
     {

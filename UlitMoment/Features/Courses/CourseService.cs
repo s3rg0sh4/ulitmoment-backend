@@ -43,21 +43,21 @@ public class CourseService(UserContext userContext)
             ?? throw new NotFoundError(nameof(Student), studentId);
 
         return student.Courses!;
-	}
+    }
 
-	public async Task<List<Course>> GetTeacherCourseListAsync(Guid teacherId)
-	{
-		var teacher =
-			await _userContext
-				.Teachers
-				.Include(t => t.Courses)
-				.FirstOrDefaultAsync(t => t.Id == teacherId)
-			?? throw new NotFoundError(nameof(Teacher), teacherId);
+    public async Task<List<Course>> GetTeacherCourseListAsync(Guid teacherId)
+    {
+        var teacher =
+            await _userContext
+                .Teachers
+                .Include(t => t.Courses)
+                .FirstOrDefaultAsync(t => t.Id == teacherId)
+            ?? throw new NotFoundError(nameof(Teacher), teacherId);
 
-		return teacher.Courses!;
-	}
+        return teacher.Courses!;
+    }
 
-	public async Task<Course> GetCourseAsync(Guid id)
+    public async Task<Course> GetCourseAsync(Guid id)
     {
         var course =
             await _userContext.Courses.FindAsync(id) ?? throw new NotFoundError(nameof(Course), id);

@@ -1,6 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Security.Claims;
+
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+
+using UlitMoment.Common.HttpResponseErrors;
 using UlitMoment.Common.Services;
+using UlitMoment.Database;
 
 namespace UlitMoment.Features.Courses;
 
@@ -12,7 +17,7 @@ public class CourseController(CourseService courseService, UserService userServi
     private readonly UserService _userService = userService;
 
     [HttpPost]
-    [Authorize(Roles = "Admin")]
+    [Authorize]
     public async Task<IActionResult> Create(CreateCourseRequest request)
     {
         var result = await _courseService.CreateCourseAsync(request);
@@ -20,19 +25,19 @@ public class CourseController(CourseService courseService, UserService userServi
     }
 
     [HttpGet("all")]
-    [Authorize(Roles = "Admin, Teacher, Student")]
+    [Authorize]
     public async Task<IActionResult> GetAll()
     {
         var userId = new Guid(User.Claims.First(c => c.Type == "UserId").Value);
-        var role = await _userService.GetRoleByUserIdAsync(userId);
+        var role = Enum.Parse<Role>(User.Claims.First(c => c.Type == ClaimTypes.Role).Value);
 
         var result = role switch
-		{
-			Database.Role.Admin => await _courseService.GetCourseListAsync(),
-			Database.Role.Teacher => await _courseService.GetTeacherCourseListAsync(userId),
-			Database.Role.Student => await _courseService.GetStudentCourseListAsync(userId),
-			_ => throw new NotImplementedException(),
-		};
+        {
+            Role.Admin => await _courseService.GetCourseListAsync(),
+            Role.Teacher => await _courseService.GetTeacherCourseListAsync(userId),
+            Role.Student => await _courseService.GetStudentCourseListAsync(userId),
+            _ => throw new InvalidRoleError(role),
+        };
 
         return Ok(result);
     }

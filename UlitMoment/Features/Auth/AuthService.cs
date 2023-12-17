@@ -1,17 +1,17 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using UlitMoment.Common.Services;
 using UlitMoment.Configuration;
 using UlitMoment.Database;
 using UlitMoment.Features.Auth.Contracts;
-using UlitMoment.Features.Auth.Errors;
-using UlitMoment.Features.UserInfo;
 
 namespace UlitMoment.Features.Auth;
 
 public class AuthService(
     UserManager<User> userManager,
     UserContext userContext,
+    UserService userService,
     TokenService tokenService,
     IOptions<ApplicationSettings> settings
 )
@@ -19,6 +19,7 @@ public class AuthService(
     private readonly UserManager<User> _userManager = userManager;
     private readonly UserContext _userContext = userContext;
     private readonly TokenService _tokenService = tokenService;
+    private readonly UserService _userService = userService;
     private readonly int _refreshTokenLifetimeInDays = settings
         .Value
         .JWT
@@ -59,7 +60,8 @@ public class AuthService(
 
     private async Task<LoginResponse> GenerateTokensAsync(Guid userId)
     {
-        var accessToken = _tokenService.CreateAccessToken(userId.ToString());
+        var role = await _userService.GetRoleByUserIdAsync(userId);
+        var accessToken = _tokenService.CreateAccessToken(userId.ToString(), role);
         var refreshToken = _tokenService.CreateRefreshToken(userId.ToString());
 
         var tokensToRemove = await _userContext

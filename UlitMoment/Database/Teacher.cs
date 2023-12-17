@@ -4,5 +4,5 @@ namespace UlitMoment.Database;
 
 public class Teacher(string email) : User(email)
 {
-	public List<Course>? Courses { get; set; }
+    public List<Course>? Courses { get; set; }
 }
