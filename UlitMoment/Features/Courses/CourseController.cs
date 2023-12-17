@@ -11,10 +11,9 @@ namespace UlitMoment.Features.Courses;
 
 [ApiController]
 [Route("course")]
-public class CourseController(CourseService courseService, UserService userService) : ControllerBase
+public class CourseController(CourseService courseService) : ControllerBase
 {
     private readonly CourseService _courseService = courseService;
-    private readonly UserService _userService = userService;
 
     [HttpPost]
     [Authorize]
