@@ -21,5 +21,13 @@ public class ErrorHandlingMiddleware(RequestDelegate next)
             var errorMessage = JsonSerializer.Serialize(new { error = err.Message });
             await context.Response.WriteAsync(errorMessage);
         }
+        catch
+		{
+			context.Response.StatusCode = 500;
+			context.Response.ContentType = "application/json";
+
+			var errorMessage = JsonSerializer.Serialize(new { error = "Unknown Error" });
+			await context.Response.WriteAsync(errorMessage);
+		}
     }
 }
