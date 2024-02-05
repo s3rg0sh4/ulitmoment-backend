@@ -8,7 +8,7 @@ using UlitMoment.Features.Courses.Contracts;
 namespace UlitMoment.Features.Courses;
 
 [ApiController]
-[Route("course")]
+[Route("[controller]")]
 public class CourseController(CourseService courseService) : ControllerBase
 {
     private readonly CourseService _courseService = courseService;

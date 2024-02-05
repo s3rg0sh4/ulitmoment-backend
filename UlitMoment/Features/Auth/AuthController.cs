@@ -5,7 +5,7 @@ using UlitMoment.Features.Auth.Contracts;
 namespace UlitMoment.Features.Auth;
 
 [ApiController]
-[Route("auth")]
+[Route("[controller]")]
 public class AuthController(AuthService authService) : ControllerBase
 {
     private readonly AuthService _authService = authService;

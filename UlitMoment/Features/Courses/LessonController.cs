@@ -6,12 +6,11 @@ using UlitMoment.Features.Lessons;
 namespace UlitMoment.Features.Courses;
 
 [ApiController]
-[Route("course/{courseId}/lesson")]
-public class LessonController(LessonService lessonService, LessonMarksService lessonMarksService)
+[Route("course/{courseId}/[controller]")]
+public class LessonController(LessonService lessonService)
     : ControllerBase
 {
     private readonly LessonService _lessonService = lessonService;
-    private readonly LessonMarksService _lessonMarksService = lessonMarksService;
 
     [HttpGet("all")]
     [Authorize]
