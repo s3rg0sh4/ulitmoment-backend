@@ -10,7 +10,7 @@ public class Course
 
     [JsonIgnore]
     public List<Student>? Students { get; set; }
-    
+
     [JsonIgnore]
     public List<Teacher>? Teachers { get; set; }
 

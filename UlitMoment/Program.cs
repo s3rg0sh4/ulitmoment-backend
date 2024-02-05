@@ -139,16 +139,16 @@ builder
             .RequireClaim("UserId")
             .RequireClaim(ClaimTypes.Role)
             .Build()
-	)
-	.AddPolicy(
-		"Admin",
-		new AuthorizationPolicyBuilder("Bearer")
-			.RequireAuthenticatedUser()
-			.RequireClaim("UserId")
-			.RequireClaim(ClaimTypes.Role, "Admin")
-			.Build()
-	)
-	.AddPolicy(
+    )
+    .AddPolicy(
+        "Admin",
+        new AuthorizationPolicyBuilder("Bearer")
+            .RequireAuthenticatedUser()
+            .RequireClaim("UserId")
+            .RequireClaim(ClaimTypes.Role, "Admin")
+            .Build()
+    )
+    .AddPolicy(
         "Teacher",
         new AuthorizationPolicyBuilder("Bearer")
             .RequireAuthenticatedUser()
