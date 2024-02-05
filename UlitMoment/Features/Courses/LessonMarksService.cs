@@ -9,7 +9,24 @@ public class LessonMarksService(UserContext userContext)
 {
     private readonly UserContext _userContext = userContext;
 
-    public async Task<List<StudentLessonMark>> GetLessonMarks(Guid lessonId)
+    public async Task<StudentLessonMark> GetStudentLessonMark(Guid studentId, Guid lessonId)
+    {
+		if (!await _userContext.Lessons.AnyAsync(l => l.Id == lessonId))
+			throw new NotFoundError(nameof(Lesson), lessonId);
+
+		if (!await _userContext.Students.AnyAsync(s => s.Id == studentId))
+			throw new NotFoundError(nameof(Student), studentId);
+
+		var mark =
+			await _userContext
+				.StudentLessonMarks
+				.FirstOrDefaultAsync(l => l.Id == lessonId)
+                ?? throw new NotFoundError(nameof(StudentLessonMark));
+
+        return mark;
+	}
+
+	public async Task<List<StudentLessonMark>> GetLessonMarks(Guid lessonId)
     {
         var lesson =
             await _userContext

@@ -15,6 +15,7 @@ public class UserContext(DbContextOptions<UserContext> options)
     public DbSet<Course> Courses { get; set; }
     public DbSet<Lesson> Lessons { get; set; }
     public DbSet<School> Schools { get; set; }
+    public DbSet<StudentLessonMark> StudentLessonMarks { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
